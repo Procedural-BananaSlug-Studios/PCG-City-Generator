@@ -105,7 +105,7 @@ public class WaveFunctionCollapse : MonoBehaviour
         cellToCollapse.collapsed = true;
         try
         {
-            Tile selectedTile = cellToCollapse.tileOptions[UnityEngine.Random.Range(0, cellToCollapse.tileOptions.Length)];
+            Tile selectedTile = WeightedTile(cellToCollapse.tileOptions);
             cellToCollapse.tileOptions = new Tile[] { selectedTile };
         }
         catch
@@ -115,6 +115,13 @@ public class WaveFunctionCollapse : MonoBehaviour
         }
 
         Tile foundTile = cellToCollapse.tileOptions[0];
+        // Rotate buildings a random direction, currently does not work due to pivot point being off-centered
+        // if (foundTile.tag == "Building")
+        // {
+        //     System.Random random = new System.Random();
+        //     Quaternion randomRotation = Quaternion.Euler(0, UnityEngine.Random.Range.Next(4) * 90, 0);
+        //     foundTile.transform.rotation = foundTile.transform.rotation * randomRotation;
+        // }
         Instantiate(foundTile, cellToCollapse.transform.position, foundTile.transform.rotation);
 
         UpdateGeneration();
@@ -282,6 +289,24 @@ public class WaveFunctionCollapse : MonoBehaviour
         }
     }
 
+    Tile WeightedTile(Tile[] tileOptions)
+    {
+        float totalWeight = tileOptions.Sum(t => t.weight);
+        float randomWeight = UnityEngine.Random.Range(0, totalWeight);
+        float cumulativeWeight = 0.0f;
+
+        foreach (var tile in tileOptions)
+        {
+            cumulativeWeight += tile.weight;
+            if (randomWeight <= cumulativeWeight)
+            {
+                return tile;
+            }
+        }
+
+        // Fallback, should not happen
+        return tileOptions[0];
+    }
 
 
 }
