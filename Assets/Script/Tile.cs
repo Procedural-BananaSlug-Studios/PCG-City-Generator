@@ -10,12 +10,6 @@ public class Tile : MonoBehaviour
     public Tile[] downNeighbour;
     public Tile[] leftNeighbour;
     public Tile[] rightNeighbour;
-
-    public Tile[] upLeftNeighbour;
-    public Tile[] upRightNeighbour;
-    public Tile[] downLeftNeighbour;
-    public Tile[] downRightNeighbour;
-
     public void PrintNeighbors()
     {
         Debug.Log("Up Neighbors:");

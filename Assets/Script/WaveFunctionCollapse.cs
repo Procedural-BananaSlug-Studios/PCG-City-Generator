@@ -149,7 +149,6 @@ public class WaveFunctionCollapse : MonoBehaviour
 
                         foreach (Tile possibleOptions in up.tileOptions)
                         {
-                            Debug.Log(possibleOptions);
                             var validOption = Array.FindIndex(tileObjects, obj => obj == possibleOptions);
                             var valid = tileObjects[validOption].downNeighbour;
 
@@ -240,7 +239,7 @@ public class WaveFunctionCollapse : MonoBehaviour
         }
     }
 
-    //umbrealla stuff that starts at bottom corner of grid so you cehck up and right and then up right
+    //umbrella stuff that starts at bottom corner of grid so you check up and right and then up right
     void DetectAndPlaceUmbrella()
     {
         for (int y = 0; y < dimensions; y++)
@@ -252,22 +251,18 @@ public class WaveFunctionCollapse : MonoBehaviour
                 // check if the current cell is collapsed and is curve180
                 if (currentCell.collapsed && currentCell.tileOptions[0] == curve180Tile)
                 {
-                    Debug.Log("Curve 180 found at: " + x + ", " + y);
                     // check if the right neighbor is available and is curve 90 
                     Cell rightNeighbor = currentCell.rightNeighbor;
                     if (rightNeighbor != null && rightNeighbor.collapsed && rightNeighbor.tileOptions[0] == curve90Tile)
                     {
-                        Debug.Log("Curve 90 found at right neighbor");
                         // check if the up neighbor is available and contains curve270
                         Cell upNeighbor = currentCell.upNeighbor;
                         if (upNeighbor != null && upNeighbor.collapsed && upNeighbor.tileOptions[0] == curve270Tile)
                         {
-                            Debug.Log("Curve 270 found at top neighbor");
                             // Check if the right neighbor of the up neighbor is available and contains curve0
                             Cell rightNeighborofTop = upNeighbor.rightNeighbor;
                             if (rightNeighborofTop != null && rightNeighborofTop.collapsed && rightNeighborofTop.tileOptions[0] == curve0Tile)
                             {
-                                Debug.Log("Curve 0 found at right neighbor of up neighbor");
                                 // Calculate the position of the center of the circle
                                 Vector3 circleCenter = (currentCell.transform.position +
                                                         rightNeighbor.transform.position +
