@@ -5,6 +5,7 @@ using UnityEngine;
 public class DelayABit : MonoBehaviour
 {
     public GameObject obj1, obj2, obj3, obj4;
+    public float delay = 15f;
 
     // Start is called before the first frame update
     void Start()
@@ -18,7 +19,7 @@ public class DelayABit : MonoBehaviour
 
     public IEnumerator Delayed()
     {
-        yield return new WaitForSeconds(15f);
+        yield return new WaitForSeconds(delay);
         obj1.SetActive(false);
         obj2.SetActive(true);
     }

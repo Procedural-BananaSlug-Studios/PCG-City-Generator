@@ -27,6 +27,8 @@ public class PlayerController : MonoBehaviour {
         spawn = transform.position;
         spawn.y += 20f;
         state = PlayerState.Walking;
+
+        Cursor.visible = false;
     }
 
     // Update is called once per frame
