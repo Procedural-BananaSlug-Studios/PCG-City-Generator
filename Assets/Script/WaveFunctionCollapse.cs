@@ -30,67 +30,87 @@ public class WaveFunctionCollapse : MonoBehaviour
 
     void InitializeGrid()
     {
-        float cellSize = 3.0f; // Replace with thecell size
-
+        float cellSize = 3.0f; // Replace with the cell size
         for (int y = 0; y < dimensions; y++)
         {
             for (int x = 0; x < dimensions; x++)
             {
                 Cell newCell = Instantiate(cellObj, new Vector3(x * cellSize, 0, y * cellSize), cellObj.transform.rotation);
                 newCell.CreateCell(false, tileObjects);
-
                 gridComponents.Add(newCell);
 
             }
         }
-
         StartCoroutine(CheckEntropy());
         SetNeighboringCells();
-
     }
 
-
-
-    void SetNeighboringCells()
+    public void InitializeAdjacentGrid()
     {
+        float cellSize = 3.0f;
+        int newGridXOffset = dimensions;
         for (int y = 0; y < dimensions; y++)
         {
             for (int x = 0; x < dimensions; x++)
             {
-                int index = x + y * dimensions;
-                Cell currentCell = gridComponents[index];
+                Cell newCell = Instantiate(cellObj, new Vector3((x + newGridXOffset) * cellSize, 0, y * cellSize), Quaternion.identity);
+                newCell.CreateCell(true, tileObjects);  // Consider existing grid's edge tiles
+                gridComponents.Add(newCell);
+            }
+        }
+        StartCoroutine(CheckEntropy());
+        SetNeighboringCells(true);  // Set neighbors considering the extended grid
+    }
 
-                // set the neighboring cells for the current cell
-                currentCell.upNeighbor = GetNeighborCell(x, y + 1);
-                currentCell.downNeighbor = GetNeighborCell(x, y - 1);
-                currentCell.leftNeighbor = GetNeighborCell(x - 1, y);
-                currentCell.rightNeighbor = GetNeighborCell(x + 1, y);
+    void SetNeighboringCells(bool includeExistingGrid = false)
+    {
+        int totalDimensions = includeExistingGrid ? dimensions * 2 : dimensions;
+        for (int y = 0; y < dimensions; y++)
+        {
+            for (int x = 0; x < totalDimensions; x++)  // Adjust to handle wider range
+            {
+                int index = x + y * totalDimensions;
+                Cell currentCell = gridComponents[index];
+                // Ensure neighbors are set correctly considering the boundary conditions
+                currentCell.upNeighbor = GetNeighborCell(x, y + 1, totalDimensions);
+                currentCell.downNeighbor = GetNeighborCell(x, y - 1, totalDimensions);
+                currentCell.leftNeighbor = GetNeighborCell(x - 1, y, totalDimensions);
+                currentCell.rightNeighbor = GetNeighborCell(x + 1, y, totalDimensions);
             }
         }
     }
-    Cell GetNeighborCell(int x, int y)
-    {
-        if (x >= 0 && x < dimensions && y >= 0 && y < dimensions)
-        {
-            return gridComponents[x + y * dimensions];
-        }
 
+    Cell GetNeighborCell(int x, int y, int totalDimensions)
+    {
+        if (x >= 0 && x < totalDimensions && y >= 0 && y < dimensions)
+        {
+            return gridComponents[x + y * totalDimensions];
+        }
         return null;
     }
 
+
     IEnumerator CheckEntropy()
     {
-        List<Cell> tempGrid = new List<Cell>(gridComponents);
-        tempGrid.RemoveAll(c => c.collapsed);
-        tempGrid.Sort((a, b) => a.tileOptions.Length - b.tileOptions.Length);
-        tempGrid.RemoveAll(a => a.tileOptions.Length != tempGrid[0].tileOptions.Length);
+        while (true)
+        {
+            List<Cell> tempGrid = new List<Cell>(gridComponents);
+            tempGrid.RemoveAll(c => c.collapsed);
+            if (tempGrid.Count == 0) break;  // Exit if all cells are collapsed
 
-        yield return new WaitForSeconds(0.025f);
+            tempGrid.Sort((a, b) => a.tileOptions.Length - b.tileOptions.Length);
+            if (tempGrid.Count == 0) yield break;  // Safety check
+            tempGrid.RemoveAll(a => a.tileOptions.Length != tempGrid[0].tileOptions.Length);
 
-        CollapseCell(tempGrid);
+
+            yield return new WaitForSeconds(0.025f);
+
+            CollapseCell(tempGrid);
+        }
 
         if (iteration == dimensions * dimensions)
         {
+            // InitializeAdjacentGrid(); // Can comment this out and only have it trigger with a button press
             DetectAndPlaceUmbrella();
         }
 
@@ -307,6 +327,4 @@ public class WaveFunctionCollapse : MonoBehaviour
         // Fallback, should not happen
         return tileOptions[0];
     }
-
-
 }
