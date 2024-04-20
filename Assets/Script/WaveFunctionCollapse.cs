@@ -19,6 +19,7 @@ public class WaveFunctionCollapse : MonoBehaviour
     public Tile curve90Tile; // set curve90 here
     public Tile curve180Tile; //    set curve180 here
     public Tile curve270Tile; // set curve270 here
+    private int newGridXOffset = 0;
 
 
     private void Awake()
@@ -41,6 +42,7 @@ public class WaveFunctionCollapse : MonoBehaviour
 
             }
         }
+        newGridXOffset += dimensions;
         StartCoroutine(CheckEntropy());
         SetNeighboringCells();
     }
@@ -48,16 +50,23 @@ public class WaveFunctionCollapse : MonoBehaviour
     public void InitializeAdjacentGrid()
     {
         float cellSize = 3.0f;
-        int newGridXOffset = dimensions;
         for (int y = 0; y < dimensions; y++)
         {
             for (int x = 0; x < dimensions; x++)
             {
                 Cell newCell = Instantiate(cellObj, new Vector3((x + newGridXOffset) * cellSize, 0, y * cellSize), Quaternion.identity);
-                newCell.CreateCell(true, tileObjects);  // Consider existing grid's edge tiles
+                newCell.CreateCell(false, tileObjects);  // Consider existing grid's edge tiles
                 gridComponents.Add(newCell);
+                
+                if (x == 0) // Check if we are at the border with the first generation
+                {
+                    Cell edgeCellFirstGen = GetCellAtPosition(x + newGridXOffset - 1, y); // Get the corresponding edge cell
+                    newCell.leftNeighbor = edgeCellFirstGen; // Set the left neighbor
+                    edgeCellFirstGen.rightNeighbor = newCell; // Update the edge cell's right neighbor to be the new cell
+                }
             }
         }
+        newGridXOffset += dimensions; // Update the offset for the next generation
         StartCoroutine(CheckEntropy());
         SetNeighboringCells(true);  // Set neighbors considering the extended grid
     }
@@ -77,7 +86,19 @@ public class WaveFunctionCollapse : MonoBehaviour
                 currentCell.leftNeighbor = GetNeighborCell(x - 1, y, totalDimensions);
                 currentCell.rightNeighbor = GetNeighborCell(x + 1, y, totalDimensions);
             }
+
+
         }
+    }
+
+    Cell GetCellAtPosition(int x, int y)
+    {
+        // Assuming a single list `gridComponents` holds all the cells, and 'dimensions' is the width/height of the grid
+        if (x >= 0 && x < 2 * dimensions && y >= 0 && y < dimensions)
+        {
+            return gridComponents[x + y * 2 * dimensions];
+        }
+        return null; // Out of bounds
     }
 
     Cell GetNeighborCell(int x, int y, int totalDimensions)
